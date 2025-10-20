@@ -23,7 +23,7 @@ with col1:
     try:
         st.image(PHOTO_PATH, caption=NAME, use_container_width=True)
     except Exception:
-        st.info("Add a photo named `your_photo.jpg` to the repo root, or change PHOTO_PATH.")
+        st.info("Add a photo named `Ren_Photo.jpg` to the repo root, or change PHOTO_PATH.")
 with col2:
     st.subheader(NAME)
     st.write(PROGRAM)
