@@ -34,7 +34,7 @@ else:
         df = pd.read_csv(uploaded_file)
         st.success("✅ Loaded your uploaded CSV")
     else:
-        st.info("👆 Upload a CSV file to continue.")
+        st.info("Upload a CSV file to continue.")
         st.stop()
 
 # -------------------- PREVIEW --------------------
