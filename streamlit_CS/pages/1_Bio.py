@@ -3,7 +3,7 @@ import streamlit as st
 st.title("My Bio")
 
 # ---------- TODO: Replace with your own info ----------
-NAME = "Vaishaghy"
+NAME = "Ren"
 PROGRAM = "Your Program / Computer Science / Role"
 INTRO = (
     "Write 2–3 sentences about yourself: what you’re studying/working on, "
