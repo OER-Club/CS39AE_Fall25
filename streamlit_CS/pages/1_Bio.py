@@ -21,10 +21,13 @@ PHOTO_PATH = "Path(__file__).resolve().parent.parent / "assets" / "Ren_Photo.jpg
 col1, col2 = st.columns([1, 2], vertical_alignment="center")
 
 with col1:
-    try:
-        st.image(PHOTO_PATH, caption=NAME, use_container_width=True)
-    except Exception:
-        st.info("Add a photo named `Ren_Photo.jpg` to the repo root, or change PHOTO_PATH.")
+        if photo_path.exists():
+        st.image(str(photo_path), caption=NAME, use_container_width=True)
+    else:
+        st.info(
+            "⚠️ Couldn't find the image. Make sure you have `Ren_Photo.jpg` inside an `assets` folder "
+            "at the same level as your main Streamlit app."
+        )
 with col2:
     st.subheader(NAME)
     st.write(PROGRAM)
