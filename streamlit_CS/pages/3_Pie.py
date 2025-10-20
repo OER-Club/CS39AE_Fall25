@@ -13,7 +13,11 @@ Upload a small CSV file (around 10 rows) with **two columns**:
 """)
 
 # -------------------- UPLOAD DATA --------------------
-uploaded_file = st.file_uploader("📂 Upload your CSV file", type=["csv"])
+use_sample = st.toggle("Use bundled sample file (data/pie_demo.csv)", value=True)
+
+uploaded = use_sample
+if not use_sample:
+  uploaded_file = st.file_uploader("📂 Upload your CSV file", type=["csv"])
 
 if uploaded_file is not None:
     # Step 1: Read CSV
