@@ -15,7 +15,7 @@ FUN_FACTS = [
     "I’m learning …",
     "I want to build a Network Project",
 ]
-PHOTO_PATH = "../assets/Ren_Photo.jpg"  # Put a file in repo root or set a URL
+PHOTO_PATH = "Path(__file__).resolve().parent.parent / "assets" / "Ren_Photo.jpg"  # Put a file in repo root or set a URL
 
 # ---------- Layout ----------
 col1, col2 = st.columns([1, 2], vertical_alignment="center")
@@ -29,7 +29,7 @@ with col2:
     st.subheader(NAME)
     st.write(PROGRAM)
     st.write(INTRO)
-    st.write("File exists:", os.path.exists(PHOTO_PATH))
+    
 st.markdown("### Fun facts")
 for i, f in enumerate(FUN_FACTS, start=1):
     st.write(f"- {f}")
