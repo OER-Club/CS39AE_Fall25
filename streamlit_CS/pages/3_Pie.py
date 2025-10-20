@@ -12,31 +12,38 @@ Upload a small CSV file (around 10 rows) with **two columns**:
 - `value`: numeric values representing slice size  
 """)
 
-# -------------------- UPLOAD DATA --------------------
-use_sample = st.toggle("Use bundled sample file (data/pie_demo.csv)", value=True)
+# -------------------- TOGGLE DATA SOURCE --------------------
+use_sample = st.toggle("Use sample CSV from GitHub", value=True)
 
-uploaded = use_sample
-if not use_sample:
-  uploaded_file = st.file_uploader("📂 Upload your CSV file", type=["csv"])
-
-if uploaded_file is not None:
-    # Step 1: Read CSV
-    df = pd.read_csv(uploaded_file)
-
-    # Step 2: Show data table
-    st.subheader("Data Preview")
-    st.dataframe(df, use_container_width=True)
-
-    # Step 3: Make an interactive pie chart
-    st.subheader("Interactive Pie Chart")
-    fig = px.pie(
-        df,
-        names="category",
-        values="value",
-        title="Category Share (Interactive Pie Chart)",
-        color_discrete_sequence=px.colors.qualitative.Pastel
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
+if use_sample:
+    # Step 1: Read CSV from GitHub raw link
+    github_csv_url = "data/pie_demo.csv"
+    # 👆 Replace <username> and <repo> with your actual GitHub info
+    df = pd.read_csv(github_csv_url)
+    st.success("Loaded sample CSV from GitHub ✅")
 else:
-    st.info("👆 Upload a CSV file to begin (with 'category' and 'value' columns).")
+    # Step 2: Let user upload CSV
+    uploaded_file = st.file_uploader("📂 Upload your CSV file", type=["csv"])
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.success("Loaded your uploaded CSV ✅")
+    else:
+        st.info(" Upload a CSV file to continue.")
+        st.stop()
+
+# -------------------- PREVIEW --------------------
+st.subheader("Data Preview")
+st.dataframe(df, use_container_width=True)
+
+# -------------------- PIE CHART --------------------
+st.subheader("Interactive Pie Chart")
+fig = px.pie(
+    df,
+    names="category",
+    values="value",
+    title="Category Share (Interactive Pie Chart)",
+    color_discrete_sequence=px.colors.qualitative.Pastel
+)
+st.plotly_chart(fig, use_container_width=True)
+
+st.caption("Built in Streamlit • CSV read directly from GitHub or upload option")
