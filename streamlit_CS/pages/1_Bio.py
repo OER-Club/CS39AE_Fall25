@@ -1,5 +1,5 @@
 import streamlit as st
-import os
+from pathlib import Path
 
 st.title("My Bio")
 
