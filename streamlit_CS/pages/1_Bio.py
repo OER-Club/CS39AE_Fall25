@@ -15,18 +15,35 @@ FUN_FACTS = [
     "I’m learning …",
     "I want to build a Network Project",
 ]
-PHOTO_PATH = "Path(__file__).resolve().parent.parent / "assets" / "Ren_Photo.jpg"  # Put a file in repo root or set a URL
+def find_photo(filename="Ren_Photo.jpg"):
+    # Try common locations for multipage apps
+    try:
+        script_dir = Path(__file__).resolve().parent
+    except NameError:
+        script_dir = Path.cwd()
 
-# ---------- Layout ----------
+    candidates = [
+        script_dir / "assets" / filename,          # pages/assets/...
+        script_dir.parent / "assets" / filename,   # root/assets/... (common)
+        Path("assets") / filename,                 # cwd/assets/...
+    ]
+    for p in candidates:
+        if p.exists():
+            return str(p)
+    return None
+
+photo_src = find_photo("Ren_Photo.jpg")
+
+# -------------------- LAYOUT --------------------
 col1, col2 = st.columns([1, 2], vertical_alignment="center")
 
 with col1:
-        if photo_path.exists():
-        st.image(str(photo_path), caption=NAME, use_container_width=True)
+    if photo_src:
+        st.image(photo_src, caption=NAME, use_container_width=True)
     else:
         st.info(
-            "⚠️ Couldn't find the image. Make sure you have `Ren_Photo.jpg` inside an `assets` folder "
-            "at the same level as your main Streamlit app."
+            "📷 Place `Ren_Photo.jpg` inside an `assets/` folder at the app root "
+            "or update the path in `find_photo()`."
         )
 with col2:
     st.subheader(NAME)
