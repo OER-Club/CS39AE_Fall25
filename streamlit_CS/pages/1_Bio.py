@@ -14,7 +14,7 @@ FUN_FACTS = [
     "I’m learning …",
     "I want to build a Network Project",
 ]
-PHOTO_PATH = "assets/Ren_Photo.jpg"  # Put a file in repo root or set a URL
+PHOTO_PATH = "../assets/Ren_Photo.jpg"  # Put a file in repo root or set a URL
 
 # ---------- Layout ----------
 col1, col2 = st.columns([1, 2], vertical_alignment="center")
