@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 st.title("My Bio")
 
@@ -28,7 +29,8 @@ with col2:
     st.subheader(NAME)
     st.write(PROGRAM)
     st.write(INTRO)
-
+   st.write("Current working directory:", os.getcwd())
+   st.write("File exists:", os.path.exists(PHOTO_PATH))
 st.markdown("### Fun facts")
 for i, f in enumerate(FUN_FACTS, start=1):
     st.write(f"- {f}")
