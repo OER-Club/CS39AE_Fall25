@@ -4,7 +4,7 @@ import plotly.express as px
 
 # -------------------- PAGE SETUP --------------------
 st.set_page_config(page_title="Simple Pie Chart", page_icon="🥧", layout="wide")
-st.title("🥧 Interactive Pie Chart from CSV")
+st.title("Interactive Pie Chart from CSV")
 
 st.write("""
 Upload a small CSV file (around 10 rows) with **two columns**:
