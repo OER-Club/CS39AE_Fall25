@@ -74,11 +74,7 @@ auto_refresh = st.toggle("Enable auto-refresh", value=False)
 # Show current refresh time
 st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
 
-# If auto-refresh is ON, wait and rerun the app
-if auto_refresh:
-    time.sleep(refresh_sec)
-    fetch_prices.clear()
-    st.rerun()
+
 
 
 
@@ -95,6 +91,14 @@ st.dataframe(df, use_container_width=True)
 fig = px.bar(df, x="coin", y=VS, title=f"Current price ({VS.upper()})")
 st.plotly_chart(fig, use_container_width=True)
 
+
+
+
+# If auto-refresh is ON, wait and rerun the app
+if auto_refresh:
+    time.sleep(refresh_sec)
+    fetch_prices.clear()
+    st.rerun()
 # -------------------- OPTIONAL: Pick your coins (still simple) --------------------
 # st.subheader("Pick coins (optional)")
 # available = ["bitcoin", "ethereum", "solana", "dogecoin", "cardano", "litecoin"]
