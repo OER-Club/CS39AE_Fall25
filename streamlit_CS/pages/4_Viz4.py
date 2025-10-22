@@ -19,19 +19,25 @@ if uploaded:
     fig = px.line(df, x=df.columns[0], y=df.columns[1], title="Quick Plot")
     st.plotly_chart(fig, use_container_width=True)
 
-st.subheader("4) Add filters + Bar Chart")
+st.subheader("4) Add check-box filters + Bar Chart")
 
 if uploaded:
-    # Optional category filter
+    # ---- Category filter using checkboxes ----
     cat_col = "category" if "category" in df.columns else None
     if cat_col:
-        cats = ["(All)"] + sorted(df[cat_col].dropna().unique().tolist())
-        choice = st.selectbox("Category filter", cats)
-        df_view = df if choice == "(All)" else df[df[cat_col] == choice]
+        st.write("Select categories to display:")
+        cats = sorted(df[cat_col].dropna().unique().tolist())
+        selected = []
+        for c in cats:
+            if st.checkbox(c, value=True, key=f"chk_{c}"):
+                selected.append(c)
+
+        # Filter data based on checked boxes
+        df_view = df[df[cat_col].isin(selected)] if selected else df.iloc[0:0]
     else:
         df_view = df
 
-    # Optional number-of-rows filter
+    # ---- Row limit slider ----
     row_limit = st.slider("Number of rows to display", 5, len(df_view), min(50, len(df_view)))
     df_view = df_view.tail(row_limit)
 
