@@ -21,3 +21,9 @@ resp.raise_for_status()
 data = resp.json()           # {'bitcoin': {'usd': 12345}, 'ethereum': {'usd': 2345}}
 df_once = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
 st.dataframe(df_once)
+
+#Step 2
+st.subheader("2) Quick bar plot")
+fig_bar = px.bar(df_once, x="coin", y=VS, title="Current price (USD)")
+st.plotly_chart(fig_bar, use_container_width=True)
+
