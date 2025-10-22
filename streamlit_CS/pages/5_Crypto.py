@@ -42,14 +42,34 @@ def fetch_prices(url: str):
         return None, f"Network/HTTP error: {e}"
 
 # -------------------- UI: REFRESH BUTTON --------------------
-cols = st.columns([1, 1, 6])
-with cols[0]:
-    if st.button("🔄 Refresh now"):
-        # Clear cache so the next call actually hits the API
-        fetch_prices.clear()
-        st.rerun()
-with cols[1]:
-    st.write(f"Last refreshed: **{time.strftime('%H:%M:%S')}**")
+# cols = st.columns([1, 1, 6])
+# with cols[0]:
+#     if st.button("🔄 Refresh now"):
+#         # Clear cache so the next call actually hits the API
+#         fetch_prices.clear()
+#         st.rerun()
+# with cols[1]:
+#     st.write(f"Last refreshed: **{time.strftime('%H:%M:%S')}**")
+
+
+# --- Auto Refresh Controls ---
+st.subheader("🔁 Auto Refresh Settings")
+
+# Let user choose how often to refresh (in seconds)
+refresh_sec = st.slider("Refresh every (sec)", 10, 120, 30)
+
+# Toggle to turn automatic refreshing on/off
+auto_refresh = st.toggle("Enable auto-refresh", value=False)
+
+# Show current refresh time
+st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
+
+# If auto-refresh is ON, wait and rerun the app
+if auto_refresh:
+    time.sleep(refresh_sec)
+    st.rerun()
+
+
 
 # -------------------- MAIN VIEW --------------------
 st.subheader("Prices")
