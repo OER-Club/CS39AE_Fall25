@@ -9,16 +9,47 @@ st.set_page_config(page_title="Live API Demo", page_icon="📡", layout="wide")
 st.title("📡 Live Data from a Free API (CoinGecko)")
 st.caption("Public endpoint, no API key required. Updates live.")
 
+# ---------------- Small helper: resilient HTTP GET (retries + headers) ----------------
+def http_get(url, params=None, max_retries=3, backoff=2.0, timeout=10):
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": "msudenver-streamlit-class/1.0 (+contact: instructor@example.edu)"
+    }
+    attempt = 0
+    while True:
+        try:
+            r = requests.get(url, params=params, headers=headers, timeout=timeout)
+            # Retry on 429/5xx
+            if r.status_code in (429, 500, 502, 503, 504) and attempt < max_retries:
+                attempt += 1
+                time.sleep(backoff ** attempt)
+                continue
+            r.raise_for_status()
+            return r.json()
+        except requests.RequestException as e:
+            if attempt < max_retries:
+                attempt += 1
+                time.sleep(backoff ** attempt)
+                continue
+            raise
+
 # ---------------- Step 1 ----------------
 st.subheader("1) Read API once (no cache)")
 COINS = ["bitcoin", "ethereum"]
 VS = "usd"
-url = f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(COINS)}&vs_currencies={VS}"
+BASE_URL = "https://api.coingecko.com/api/v3/simple/price"
+params = {"ids": ",".join(COINS), "vs_currencies": VS}
 
-resp = requests.get(url, timeout=10)
-resp.raise_for_status()
-data = resp.json()
-df_once = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
+# FIX: guard the first call; show fallback if API unhappy
+try:
+    data = http_get(BASE_URL, params=params)
+    df_once = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
+    st.success("✅ API call OK")
+except requests.HTTPError as e:
+    code = e.response.status_code if e.response is not None else "?"
+    st.error(f"API error (HTTP {code}). Showing fallback sample.")
+    df_once = pd.DataFrame({"coin": ["bitcoin", "ethereum"], VS: [30000.0, 2000.0]})
+
 st.dataframe(df_once)
 
 # ---------------- Step 2 ----------------
@@ -28,98 +59,17 @@ st.plotly_chart(fig_bar, use_container_width=True)
 
 # ---------------- Step 3 ----------------
 st.subheader("3) Error handling")
+# (Kept for teaching—now it uses the same helper)
 try:
-    resp = requests.get(url, timeout=10)
-    resp.raise_for_status()
-    data = resp.json()
+    data = http_get(BASE_URL, params=params)
+    df_now = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
+    st.success("✅ API call ok (guarded)")
 except requests.RequestException as e:
     st.error(f"API error: {e}")
     st.stop()
-
-df_now = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
-st.success("✅ API call ok")
 
 # ---------------- Step 4 ----------------
 st.subheader("4) Cache with TTL")
 
 @st.cache_data(ttl=20)  # re-use result for 20s
-def fetch_prices():
-    r = requests.get(url, timeout=10)
-    r.raise_for_status()
-    d = r.json()
-    return pd.DataFrame(d).T.reset_index().rename(columns={"index": "coin"})
-
-df_cached = fetch_prices()
-st.dataframe(df_cached)
-
-# ---------------- Step 5 ----------------
-st.subheader("5) Live series with session history")
-
-# init history
-if "price_history" not in st.session_state:
-    st.session_state.price_history = pd.DataFrame(columns=["time", "coin", "price"])
-
-# CHANGED: define the controls ONCE
-refresh_sec = st.slider("Refresh every (sec)", 5, 60, 10)
-live = st.toggle("Enable live updates", value=True)
-
-# fetch (respect cache TTL to avoid hammering)
-df_tick = fetch_prices()
-timestamp = pd.Timestamp.now()
-
-# append to history (one row per coin)
-new_rows = [{"time": timestamp, "coin": row["coin"], "price": row[VS]} for _, row in df_tick.iterrows()]
-hist = pd.concat([st.session_state.price_history, pd.DataFrame(new_rows)], ignore_index=True)
-
-# keep last N minutes to avoid unbounded growth
-window_min = st.slider("Show last N minutes", 1, 60, 10)
-cutoff = timestamp - pd.Timedelta(minutes=window_min)
-hist = hist[hist["time"] >= cutoff].copy()
-st.session_state.price_history = hist
-
-# plot
-if len(hist):
-    fig_line = px.line(
-        hist, x="time", y="price", color="coin",
-        title="Live price (USD)", markers=True
-    )
-    st.plotly_chart(fig_line, use_container_width=True)
-else:
-    st.info("Waiting for first tick…")
-
-# lightweight metrics
-cols = st.columns(len(COINS))
-for i, c in enumerate(COINS):
-    latest = hist[hist["coin"] == c]["price"].iloc[-1] if (hist["coin"] == c).any() else None
-    with cols[i]:
-        st.metric(c.capitalize(), f"${latest:,.2f}" if latest is not None else "—")
-
-# ---------------- Step 6 ----------------
-st.subheader("6) Options & polish")
-available = ["bitcoin","ethereum","solana","dogecoin","cardano","litecoin"]
-chosen = st.multiselect("Pick coins", default=COINS, options=available)
-
-def build_url(ids):
-    return f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(ids)}&vs_currencies={VS}"
-
-@st.cache_data(ttl=20)
-def fetch_prices_for(ids_tuple):
-    r = requests.get(build_url(list(ids_tuple)), timeout=10)
-    r.raise_for_status()
-    d = r.json()
-    return pd.DataFrame(d).T.reset_index().rename(columns={"index": "coin"})
-
-df_custom = fetch_prices_for(tuple(chosen) or tuple(COINS))
-st.dataframe(df_custom)
-
-# ---------------- AUTO-RERUN (must be LAST) ----------------
-# ---------- Section F: Auto-refresh (LAST) ----------
-if live:
-    st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
-    time.sleep(refresh_sec)
-    # Prefer new API; fall back for older Streamlit
-    try:
-        st.rerun()                 # Streamlit ≥ 1.29
-    except AttributeError:
-        st.experimental_rerun()    # Older versions
-
+def fetch
