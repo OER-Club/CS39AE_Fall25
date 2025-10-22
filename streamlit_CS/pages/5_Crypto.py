@@ -13,7 +13,8 @@ COINS = ["bitcoin", "ethereum"]
 VS = "usd"
 url = f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(COINS)}&vs_currencies={VS}"
 
-resp = requests.get(url, timeout=10)
+headers = {"User-Agent": "streamlit-demo/1.0"}
+resp = requests.get(url, timeout=10, headers=headers)
 resp.raise_for_status()
 data = resp.json()
 df_once = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
