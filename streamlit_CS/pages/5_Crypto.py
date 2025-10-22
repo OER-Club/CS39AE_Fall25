@@ -96,18 +96,18 @@ fig = px.bar(df, x="coin", y=VS, title=f"Current price ({VS.upper()})")
 st.plotly_chart(fig, use_container_width=True)
 
 # -------------------- OPTIONAL: Pick your coins (still simple) --------------------
-st.subheader("Pick coins (optional)")
-available = ["bitcoin", "ethereum", "solana", "dogecoin", "cardano", "litecoin"]
-chosen = st.multiselect("Coins", default=COINS, options=available)
+# st.subheader("Pick coins (optional)")
+# available = ["bitcoin", "ethereum", "solana", "dogecoin", "cardano", "litecoin"]
+# chosen = st.multiselect("Coins", default=COINS, options=available)
 
-if chosen:
-    url_custom = build_url(chosen)
+# if chosen:
+#     url_custom = build_url(chosen)
 
-    df2, err2 = fetch_prices(url_custom)
-    if err2:
-        st.info("Using sample values for selected coins when live data isn’t available.")
-        df2 = pd.DataFrame([{ "coin": c, VS: None } for c in chosen])
+#     df2, err2 = fetch_prices(url_custom)
+#     if err2:
+#         st.info("Using sample values for selected coins when live data isn’t available.")
+#         df2 = pd.DataFrame([{ "coin": c, VS: None } for c in chosen])
 
-    st.dataframe(df2, use_container_width=True)
-    fig2 = px.bar(df2, x="coin", y=VS, title=f"Selected coins ({VS.upper()})")
-    st.plotly_chart(fig2, use_container_width=True)
+#     st.dataframe(df2, use_container_width=True)
+#     fig2 = px.bar(df2, x="coin", y=VS, title=f"Selected coins ({VS.upper()})")
+#     st.plotly_chart(fig2, use_container_width=True)
