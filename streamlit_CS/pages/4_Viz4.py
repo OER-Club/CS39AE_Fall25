@@ -19,7 +19,8 @@ if uploaded:
     fig = px.line(df, x=df.columns[0], y=df.columns[1], title="Quick Plot")
     st.plotly_chart(fig, use_container_width=True)
 
-st.subheader("4) Add filters")
+st.subheader("4) Add filters + Bar Chart")
+
 if uploaded:
     # Optional category filter
     cat_col = "category" if "category" in df.columns else None
@@ -30,17 +31,24 @@ if uploaded:
     else:
         df_view = df
 
-    # Time window (if there is a date)
-    if "date" in df_view.columns and pd.api.types.is_datetime64_any_dtype(df_view["date"]):
-        last_n = st.slider("Last N rows to chart", 10, min(500, len(df_view)), 50)
-        df_view = df_view.tail(last_n)
+    # Optional number-of-rows filter
+    row_limit = st.slider("Number of rows to display", 5, len(df_view), min(50, len(df_view)))
+    df_view = df_view.tail(row_limit)
 
     st.dataframe(df_view.head())
-    fig_filt = px.line(
+
+    # ---- Create bar chart ----
+    x_col = df_view.columns[0]
+    y_col = df_view.columns[1]
+
+    fig_bar = px.bar(
         df_view,
-        x=df_view.columns[0],
-        y=df_view.columns[1],
+        x=x_col,
+        y=y_col,
         color=cat_col if cat_col else None,
-        title="Interactive Plot"
+        title=f"Bar Chart of {y_col} by {x_col}",
+        barmode="group"
     )
-    st.plotly_chart(fig_filt, use_container_width=True)
+    fig_bar.update_layout(xaxis_title=x_col, yaxis_title=y_col)
+    st.plotly_chart(fig_bar, use_container_width=True)
+
