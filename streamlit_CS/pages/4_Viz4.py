@@ -18,3 +18,29 @@ if uploaded:
         df["date"] = pd.to_datetime(df["date"], errors="coerce")
     fig = px.line(df, x=df.columns[0], y=df.columns[1], title="Quick Plot")
     st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("4) Add filters")
+if uploaded:
+    # Optional category filter
+    cat_col = "category" if "category" in df.columns else None
+    if cat_col:
+        cats = ["(All)"] + sorted(df[cat_col].dropna().unique().tolist())
+        choice = st.selectbox("Category filter", cats)
+        df_view = df if choice == "(All)" else df[df[cat_col] == choice]
+    else:
+        df_view = df
+
+    # Time window (if there is a date)
+    if "date" in df_view.columns and pd.api.types.is_datetime64_any_dtype(df_view["date"]):
+        last_n = st.slider("Last N rows to chart", 10, min(500, len(df_view)), 50)
+        df_view = df_view.tail(last_n)
+
+    st.dataframe(df_view.head())
+    fig_filt = px.line(
+        df_view,
+        x=df_view.columns[0],
+        y=df_view.columns[1],
+        color=cat_col if cat_col else None,
+        title="Interactive Plot"
+    )
+    st.plotly_chart(fig_filt, use_container_width=True)
