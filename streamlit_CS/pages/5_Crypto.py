@@ -98,8 +98,12 @@ for i, c in enumerate(COINS):
         st.metric(c.capitalize(), f"${latest:,.2f}" if latest else "—")
 
 # auto-rerun loop
+live = st.toggle("Enable live updates", value=True)
+refresh_sec = st.slider("Refresh every (sec)", 5, 60, 10)
+
 if live:
-    st.caption(f"Last refresh: {timestamp.strftime('%H:%M:%S')}")
+    st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
+    # ✅ Put sleep + rerun as the LAST statements in your script
     time.sleep(refresh_sec)
     st.experimental_rerun()
 
