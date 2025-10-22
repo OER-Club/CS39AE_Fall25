@@ -27,3 +27,29 @@ st.subheader("2) Quick bar plot")
 fig_bar = px.bar(df_once, x="coin", y=VS, title="Current price (USD)")
 st.plotly_chart(fig_bar, use_container_width=True)
 
+#Step3
+st.subheader("3) Error handling")
+try:
+    resp = requests.get(url, timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
+except requests.RequestException as e:
+    st.error(f"API error: {e}")
+    st.stop()
+
+df_now = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
+st.success("✅ API call ok")
+
+#Step 4
+st.subheader("4) Cache with TTL")
+
+@st.cache_data(ttl=20)  # re-use result for 20s
+def fetch_prices():
+    r = requests.get(url, timeout=10)
+    r.raise_for_status()
+    d = r.json()
+    return pd.DataFrame(d).T.reset_index().rename(columns={"index": "coin"})
+
+df_cached = fetch_prices()
+st.dataframe(df_cached)
+
