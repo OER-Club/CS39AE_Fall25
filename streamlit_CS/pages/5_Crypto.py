@@ -86,7 +86,7 @@ if "price_history" not in st.session_state:
     st.session_state.price_history = pd.DataFrame(columns=["time", "coin", "price"])
 
 #refresh_sec = st.slider("Refresh every (sec)", 5, 60, 10)
-refresh_sec = st.slider("Refresh every (sec)", 30, 180, 60)  # >= CACHE_TTL recommended
+refresh_sec = st.slider("Refresh every (sec)",60, 180, 60)  # >= CACHE_TTL recommended
 
 live = st.toggle("Enable live updates", value=True)
 
@@ -121,7 +121,7 @@ chosen = st.multiselect("Pick coins", default=COINS, options=available)
 def build_url(ids):
     return f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(ids)}&vs_currencies={VS}"
 
-@st.cache_data(ttl=20)
+@st.cache_data(ttl=300)
 def fetch_prices_for(ids_tuple):
     r = requests.get(build_url(list(ids_tuple)), timeout=10)
     r.raise_for_status()
