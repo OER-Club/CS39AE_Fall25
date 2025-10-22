@@ -38,7 +38,7 @@ if uploaded:
         df_view = df
 
     # ---- Row limit slider ----
-    row_limit = st.slider("Number of rows to display", 5, len(df_view), min(50, len(df_view)))
+    row_limit = st.slider("Number of rows to display", 1, len(df_view), min(50, len(df_view)))
     df_view = df_view.tail(row_limit)
 
     st.dataframe(df_view.head())
