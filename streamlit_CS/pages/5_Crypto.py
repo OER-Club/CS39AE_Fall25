@@ -117,5 +117,6 @@ st.dataframe(df_custom)
 if live:
     st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
     time.sleep(refresh_sec)
-    st.experimental_rerun()
+    (getattr(st, "rerun", None) or getattr(st, "experimental_rerun"))()
+
 
