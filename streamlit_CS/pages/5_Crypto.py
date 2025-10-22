@@ -113,8 +113,13 @@ df_custom = fetch_prices_for(tuple(chosen) or tuple(COINS))
 st.dataframe(df_custom)
 
 # ---------------- AUTO-RERUN (must be LAST) ----------------
-# CHANGED: remove duplicate controls; call rerun at very end
+# ---------- Section F: Auto-refresh (LAST) ----------
 if live:
     st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
     time.sleep(refresh_sec)
-    st.experimental_rerun()
+    # Prefer new API; fall back for older Streamlit
+    try:
+        st.rerun()                 # Streamlit ≥ 1.29
+    except AttributeError:
+        st.experimental_rerun()    # Older versions
+
