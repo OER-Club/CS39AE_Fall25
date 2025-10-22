@@ -22,17 +22,21 @@ if uploaded:
 st.subheader("4) Add check-box filters + Bar Chart")
 
 if uploaded:
-    # ---- Category filter using checkboxes ----
+    # ---- Category filter using horizontal checkboxes ----
     cat_col = "category" if "category" in df.columns else None
     if cat_col:
         st.write("Select categories to display:")
         cats = sorted(df[cat_col].dropna().unique().tolist())
-        selected = []
-        for c in cats:
-            if st.checkbox(c, value=True, key=f"chk_{c}"):
-                selected.append(c)
 
-        # Filter data based on checked boxes
+        # Create columns dynamically for horizontal layout
+        cols = st.columns(len(cats))
+        selected = []
+        for i, c in enumerate(cats):
+            with cols[i]:
+                if st.checkbox(c, value=True, key=f"chk_{c}"):
+                    selected.append(c)
+
+        # Filter based on selected categories
         df_view = df[df[cat_col].isin(selected)] if selected else df.iloc[0:0]
     else:
         df_view = df
