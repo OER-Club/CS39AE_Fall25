@@ -113,9 +113,9 @@ st.dataframe(df_custom)
 
 # ---------- Section F: Auto-refresh (LAST) ----------
 # ---------- Section F: Auto-refresh (LAST) ----------
+
 if live:
     st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
     time.sleep(refresh_sec)
-    # Use st.rerun() if available, fall back to experimental_rerun() on older versions
-    (getattr(st, "rerun", None) or getattr(st, "experimental_rerun"))()
+    st.experimental_rerun()
 
