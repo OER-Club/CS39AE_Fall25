@@ -14,10 +14,19 @@ VS = "usd"
 url = f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(COINS)}&vs_currencies={VS}"
 
 headers = {"User-Agent": "streamlit-demo/1.0"}
-resp = requests.get(url, timeout=10, headers=headers)
-resp.raise_for_status()
-data = resp.json()
-df_once = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
+
+try:
+    resp = requests.get(url, timeout=10, headers=headers)
+    resp.raise_for_status()
+    data = resp.json()
+    df_once = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
+except requests.exceptions.HTTPError as e:
+    st.error(f"HTTP error: {e.response.status_code} — {e.response.reason}")
+    st.stop()
+except requests.exceptions.RequestException as e:
+    st.error(f"Network error: {e}")
+    st.stop()
+
 
 st.subheader("A) Read once (no cache)")
 st.dataframe(df_once)
@@ -57,7 +66,8 @@ st.subheader("D) Live series with session history")
 if "price_history" not in st.session_state:
     st.session_state.price_history = pd.DataFrame(columns=["time", "coin", "price"])
 
-refresh_sec = st.slider("Refresh every (sec)", 5, 60, 10)
+#refresh_sec = st.slider("Refresh every (sec)", 5, 60, 10)
+refresh_sec = st.slider("Refresh every (sec)", 10, 120, 30)
 live = st.toggle("Enable live updates", value=True)
 
 df_tick = fetch_prices()
