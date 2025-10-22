@@ -13,27 +13,17 @@ COINS = ["bitcoin", "ethereum"]
 VS = "usd"
 url = f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(COINS)}&vs_currencies={VS}"
 
-
-#Helper function
-HEADERS = {"User-Agent": "msudenver-dataviz/1.0", "Accept": "application/json"}
-
-def get_json(u):
-    resp = requests.get(u, timeout=10, headers=HEADERS)
-    # Friendly handling for 429
-    if resp.status_code == 429:
-        retry = int(resp.headers.get("Retry-After", "20"))
-        raise requests.HTTPError(f"429 Too Many Requests. Retry after ~{retry}s.", response=resp)
-    resp.raise_for_status()
-    return resp.json()
-
+headers = {"User-Agent": "streamlit-demo/1.0"}
 
 try:
-    data = get_json(url)
+    resp = requests.get(url, timeout=10, headers=headers)
+    resp.raise_for_status()
+    data = resp.json()
     df_once = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
-except requests.HTTPError as e:
-    st.error(f"HTTP error: {e}")
+except requests.exceptions.HTTPError as e:
+    st.error(f"HTTP error: {e.response.status_code} — {e.response.reason}")
     st.stop()
-except requests.RequestException as e:
+except requests.exceptions.RequestException as e:
     st.error(f"Network error: {e}")
     st.stop()
 
@@ -48,36 +38,27 @@ st.plotly_chart(fig_bar, use_container_width=True)
 # ---------- Section B: Error handling ----------
 st.subheader("B) Error handling")
 try:
-    data = get_json(url)
+    resp = requests.get(url, timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
     df_now = pd.DataFrame(data).T.reset_index().rename(columns={"index": "coin"})
     st.success("✅ API call ok")
-except requests.HTTPError as e:
-    st.warning("⚠️ API limit hit or temporarily blocked. Showing the message below and stopping.")
-    st.error(str(e))
-    st.stop()
 except requests.RequestException as e:
     st.error(f"API error: {e}")
     st.stop()
 
-
 # ---------- Section C: Cache with TTL ----------
 st.subheader("C) Cache with TTL")
 
-CACHE_TTL = 60  # was 20; bump to reduce hits
-
-@st.cache_data(ttl=CACHE_TTL, show_spinner=False)
+@st.cache_data(ttl=100)
 def fetch_prices():
-    d = get_json(url)
+    r = requests.get(url, timeout=10)
+    r.raise_for_status()
+    d = r.json()
     return pd.DataFrame(d).T.reset_index().rename(columns={"index": "coin"})
 
-def build_url(ids):
-    return f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(ids)}&vs_currencies={VS}"
-
-@st.cache_data(ttl=CACHE_TTL, show_spinner=False)
-def fetch_prices_for(ids_tuple):
-    d = get_json(build_url(list(ids_tuple)))
-    return pd.DataFrame(d).T.reset_index().rename(columns={"index": "coin"})
-
+df_cached = fetch_prices()
+st.dataframe(df_cached)
 
 # ---------- Section D: Live history ----------
 st.subheader("D) Live series with session history")
@@ -86,8 +67,7 @@ if "price_history" not in st.session_state:
     st.session_state.price_history = pd.DataFrame(columns=["time", "coin", "price"])
 
 #refresh_sec = st.slider("Refresh every (sec)", 5, 60, 10)
-refresh_sec = st.slider("Refresh every (sec)",60, 180, 60)  # >= CACHE_TTL recommended
-
+refresh_sec = st.slider("Refresh every (sec)", 10, 120, 30)
 live = st.toggle("Enable live updates", value=True)
 
 df_tick = fetch_prices()
@@ -121,7 +101,7 @@ chosen = st.multiselect("Pick coins", default=COINS, options=available)
 def build_url(ids):
     return f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(ids)}&vs_currencies={VS}"
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=20)
 def fetch_prices_for(ids_tuple):
     r = requests.get(build_url(list(ids_tuple)), timeout=10)
     r.raise_for_status()
@@ -132,10 +112,10 @@ df_custom = fetch_prices_for(tuple(chosen) or tuple(COINS))
 st.dataframe(df_custom)
 
 # ---------- Section F: Auto-refresh (LAST) ----------
-
+# ---------- Section F: Auto-refresh (LAST) ----------
 if live:
     st.caption(f"Last refreshed at: {time.strftime('%H:%M:%S')}")
     time.sleep(refresh_sec)
+    # Use st.rerun() if available, fall back to experimental_rerun() on older versions
     (getattr(st, "rerun", None) or getattr(st, "experimental_rerun"))()
-
 
