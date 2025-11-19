@@ -42,3 +42,15 @@ plt.axis("off")
 
 # Display in Streamlit
 st.pyplot(fig)
+
+import streamlit as st
+from networkx.algorithms.community import greedy_modularity_communities
+
+communities = greedy_modularity_communities(G)
+
+st.subheader("Detected Communities")
+
+for i, community in enumerate(communities, 1):
+    with st.expander(f"Community {i}"):
+        st.write(list(community))
+
