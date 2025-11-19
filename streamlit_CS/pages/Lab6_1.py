@@ -9,7 +9,7 @@ from networkx.algorithms.community import greedy_modularity_communities
 # -----------------------------
 st.set_page_config(page_title="Friendship Network Analysis", layout="wide")
 
-st.title("🎓 Friendship Network in a College Class")
+st.title(" Friendship Network in a College Class")
 st.write(
     """
 This app visualizes a friendship network, computes basic network measures, 
