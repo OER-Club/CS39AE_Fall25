@@ -54,3 +54,31 @@ for i, community in enumerate(communities, 1):
     with st.expander(f"Community {i}"):
         st.write(list(community))
 
+st.subheader("Phishing Network with Malicious Node Highlighting")
+
+# Compute positions BEFORE drawing
+pos = nx.spring_layout(G)
+
+# Color malicious nodes red, others green
+colors = ['red' if 'malicious' in node else 'green' for node in G.nodes()]
+
+# Draw the graph
+fig, ax = plt.subplots(figsize=(10, 6))
+
+nx.draw(
+    G,
+    pos,
+    with_labels=True,
+    node_size=3000,
+    node_color=colors,
+    edge_color='gray',
+    font_size=10,
+    font_weight='bold',
+    ax=ax
+)
+
+plt.title("Phishing Network with Malicious Node Highlighting")
+plt.axis("off")
+
+# Display in Streamlit
+st.pyplot(fig)
