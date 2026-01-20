@@ -1,7 +1,7 @@
 streamlit>=1.36
 pandas>=2.2
 plotly>=5.22
-networkx>=2.8
+networkx>=3.2
 matplotlib
 openpyxl
 pyvis
